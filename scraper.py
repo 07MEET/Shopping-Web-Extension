@@ -189,3 +189,162 @@ class ProductScraper:
             if match:
                 return self._clean_text(match.group(1))
         return ""
+    
+    # ========== Flipkart Extractors ==========
+
+    def _extract_flipkart_title(self, html: str) -> str:
+        """Extract product title from Flipkart page."""
+        patterns = [
+            r'<h1[^>]*class="[^"]*product-title[^"]*"[^>]*>([^<]+)</h1>',
+            r'<span[^>]*class="[^"]*B_Nu_[^"]*"[^>]*>([^<]+)</span>',
+            r'<title>([^<]+)</title>'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE | re.DOTALL)
+            if match:
+                return self._clean_text(match.group(1))
+        return ""
+
+    def _extract_flipkart_price(self, html: str) -> str:
+        """Extract current price from Flipkart page."""
+        patterns = [
+            r'<div[^>]*class="[^"]*Nx9bq[ ^"]*"[^>]*>([^<]+)</div>',
+            r'<div[^>]*class="[^"]*yRaY8[ ^"]*"[^>]*>([^<]+)</div>',
+            r'data-testid="price"[^>]*>([^<]+)',
+            r'(\d+[,\.]?\d*)\s*₹'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE)
+            if match:
+                price = self._clean_text(match.group(1))
+                if price:
+                    return '₹' + price if '₹' not in price else price
+        return ""
+
+    def _extract_flipkart_rating(self, html: str) -> str:
+        """Extract product rating from Flipkart page."""
+        patterns = [
+            r'<div[^>]*class="[^"]*XQDvHH[^"]*"[^>]*>([^<]+)</div>',
+            r'<span[^>]*class="[^"]*rating"[^>]*>([^<]+)</span>',
+            r'([\d.]+)\s*star'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE)
+            if match:
+                rating_text = self._clean_text(match.group(1))
+                rating_match = re.search(r'([\d.]+)', rating_text)
+                if rating_match:
+                    return rating_match.group(1)
+        return ""
+
+    def _extract_flipkart_review_count(self, html: str) -> str:
+        """Extract number of reviews from Flipkart page."""
+        patterns = [
+            r'<span[^>]*class="[^"]*reviews-count[^"]*"[^>]*>([^<]+)</span>',
+            r'(\d+[,\.]?\d*)\s*(Reviews|Ratings)',
+            r'<div[^>]*class="[^"]*reviews-header[^"]*"[^>]*>([^<]+)</div>'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE)
+            if match:
+                return self._clean_text(match.group(1))
+        return ""
+
+    def _extract_flipkart_description(self, html: str) -> str:
+        """Extract product description from Flipkart page."""
+        patterns = [
+            r'<div[^>]*class="[^"]*product-description[^"]*"[^>]*>(.*?)</div>',
+            r'<section[^>]*class="[^"]*product-details[^"]*"[^>]*>(.*?)</section>',
+            r'data-testid="description"[^>]*>([^<]+)'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE | re.DOTALL)
+            if match:
+                return self._clean_text(match.group(1))
+        return ""
+
+    def _extract_flipkart_features(self, html: str) -> list:
+        """Extract key features from Flipkart page."""
+        features = []
+        patterns = [
+            r'<li[^>]*class="[^"]*product-spec[^"]*"[^>]*>([^<]+)</li>',
+            r'<div[^>]*class="[^"]*key-feature[^"]*"[^>]*>([^<]+)</div>',
+            r'<ul[^>]*class="[^"]*key-features[^"]*"[^>]*>(.*?)</ul>'
+        ]
+        for pattern in patterns:
+            matches = re.findall(pattern, html, re.IGNORECASE | re.DOTALL)
+            for match in matches:
+                cleaned = self._clean_text(match)
+                if cleaned and len(cleaned) > 10:
+                    features.append(cleaned)
+        return features[:5]  # Return top 5 features
+
+    def _extract_flipkart_availability(self, html: str) -> str:
+        """Extract availability status from Flipkart page."""
+        patterns = [
+            r'<div[^>]*class="[^"]*stock-status[^"]*"[^>]*>([^<]+)</div>',
+            r'In Stock|Out of Stock|Available|Currently Unavailable'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE)
+            if match:
+                return self._clean_text(match.group(1))
+        return "In Stock"  # Default assumption
+
+    def _extract_flipkart_category(self, html: str) -> str:
+        """Extract product category from Flipkart page."""
+        patterns = [
+            r'<a[^>]*class="[^"]*breadcrumb[^"]*"[^>]*>([^<]+)</a>',
+            r'<nav[^>]*class="[^"]*breadcrumb[^"]*"[^>]*>(.*?)</nav>'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, html, re.IGNORECASE | re.DOTALL)
+            if match:
+                return self._clean_text(match.group(1))
+        return ""
+    
+    # ========== Utility Methods ==========
+
+    def _clean_text(self, text: str) -> str:
+        """Clean extracted text by removing extra whitespace and HTML entities."""
+        if not text:
+            return ""
+        # Remove HTML tags
+        text = re.sub(r'<[^>]+>', '', text)
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text)
+        # Remove HTML entities
+        text = text.replace('&nbsp;', ' ')
+        text = text.replace('&amp;', '&')
+        text = text.replace('&lt;', '<')
+        text = text.replace('&gt;', '>')
+        text = text.replace('&quot;', '"')
+        text = text.replace('&#39;', "'")
+        # Strip and return
+        return text.strip()
+
+    def determine_site(self, url: str) -> str:
+        """Determine which site the URL belongs to."""
+        if 'amazon' in url.lower():
+            return 'amazon'
+        elif 'flipkart' in url.lower():
+            return 'flipkart'
+        return 'unknown'
+
+    def scrape(self, html: str, url: str) -> Optional[Dict[str, Any]]:
+        """
+        Auto-detect site and scrape product data.
+
+        Args:
+            html: Raw HTML content of the product page
+            url: URL of the page (for site detection)
+
+        Returns:
+            Dictionary with product data or None if scraping fails
+        """
+        site = self.determine_site(url)
+        if site == 'amazon':
+            return self.scrape_amazon(html)
+        elif site == 'flipkart':
+            return self.scrape_flipkart(html)
+        return None
