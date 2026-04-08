@@ -40,3 +40,34 @@ class ProductScraper:
         except Exception as e:
             print(f"Error scraping Amazon: {e}")
             return None
+    def scrape_flipkart(self, html: str) -> Optional[Dict[str, Any]]:
+        """
+        Scrape product data from Flipkart product page HTML.
+
+        Args:
+            html: Raw HTML content of the Flipkart product page
+
+        Returns:
+            Dictionary with product data or None if scraping fails
+        """
+        try:
+            product_data = {
+                'site': 'flipkart',
+                'title': self._extract_flipkart_title(html),
+                'price': self._extract_flipkart_price(html),
+                'rating': self._extract_flipkart_rating(html),
+                'review_count': self._extract_flipkart_review_count(html),
+                'description': self._extract_flipkart_description(html),
+                'features': self._extract_flipkart_features(html),
+                'availability': self._extract_flipkart_availability(html),
+                'category': self._extract_flipkart_category(html)
+            }
+
+            # Only return if we got at least title and price
+            if product_data['title'] or product_data['price']:
+                return product_data
+            return None
+
+        except Exception as e:
+            print(f"Error scraping Flipkart: {e}")
+            return None
