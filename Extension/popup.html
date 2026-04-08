@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Shopping Assistant</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon">🛒</div>
+      <h1>AI Shopping Assistant</h1>
+      <p class="subtitle">Get instant insights about your product</p>
+    </header>
+
+    <!-- Product Summary Section -->
+    <section id="product-section" class="product-section">
+      <div id="product-info" class="product-info">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Detecting product...</p>
+      </div>
+    </section>
+
+    <!-- Chat Section -->
+    <section class="chat-section">
+      <div id="chat-messages" class="chat-messages">
+        <div class="message assistant-message">
+          <div class="message-avatar">🤖</div>
+          <div class="message-content">
+            Hi! I'm your AI shopping assistant. I can help you with:
+            <ul>
+              <li>Product details and specifications</li>
+              <li>Price analysis and recommendations</li>
+              <li>Comparing features</li>
+              <li>Answering any questions about this product</li>
+            </ul>
+            What would you like to know?
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <textarea
+          id="user-input"
+          class="user-input"
+          placeholder="Ask me anything about this product..."
+          rows="2"
+        ></textarea>
+        <button id="send-btn" class="send-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <span id="status-text" class="status-text">Ready</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
