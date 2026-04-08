@@ -30,4 +30,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class ProductData(BaseModel):
+    """Product data model from scraped content."""
+    site: str
+    title: str
+    price: str
+    rating: str
+    review_count: str
+    description: str
+    features: List[str]
+    availability: str
+    category: str
+
+
+class QueryRequest(BaseModel):
+    """Request model for product query."""
+    product_data: ProductData
+    question: str
+    url: Optional[str] = ""
+
+
+class QueryResponse(BaseModel):
+    """Response model for product query."""
+    answer: str
+    product_summary: str
+
 
