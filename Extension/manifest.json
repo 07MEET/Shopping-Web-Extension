@@ -1,11 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "AI Shopping Assistant",
-  "description": "AI-powered assistant to help users make informed shopping decisions on Amazon and Flipkart.",
-  "version": "1.0",
+  "name": "ShopMind AI",
+  "description": "AI-powered shopping advisor — get instant insights on any product page.",
+  "version": "2.0",
 
   "action": {
-    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -21,13 +20,16 @@
 
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage",
+    "contextMenus"
   ],
 
   "host_permissions": [
     "https://www.amazon.in/*",
     "https://www.amazon.com/*",
-    "https://www.flipkart.com/*"
+    "https://www.flipkart.com/*",
+    "http://localhost:5000/*"
   ],
 
   "background": {

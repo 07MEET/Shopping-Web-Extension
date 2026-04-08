@@ -1,117 +1,80 @@
 /**
- * Background Service Worker for AI Shopping Assistant
- * Handles communication between content scripts and popup
+ * Background Service Worker for ShopMind AI
  */
 
-// Listen for extension installation
 chrome.runtime.onInstalled.addListener((details) => {
-    console.log('[AI Shopping Assistant] Extension installed:', details.reason);
+  console.log('[ShopMind AI] Installed:', details.reason);
+  chrome.storage.local.set({ lastScrapedData: null });
 
-    // Set default state
-    chrome.storage.local.set({
-        lastScrapedData: null,
-        apiConnected: false
-    });
+  chrome.contextMenus.create({
+    id: 'analyzeProduct',
+    title: '✦ Ask ShopMind AI about this product',
+    contexts: ['page'],
+    documentUrlPatterns: [
+      'https://www.amazon.in/*',
+      'https://www.amazon.com/*',
+      'https://www.flipkart.com/*'
+    ]
+  });
 });
 
-// Handle messages from content script or popup
+// Clicking toolbar icon → open sidebar in current tab
+chrome.action.onClicked.addListener((tab) => {
+  chrome.tabs.sendMessage(tab.id, { action: 'openSidebar' }, (response) => {
+    if (chrome.runtime.lastError) {
+      // Content script not injected yet — inject it first
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js']
+      });
+    }
+  });
+});
+
+// Handle messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('[AI Shopping Assistant] Message received:', request);
-
-    if (request.action === 'getScrapedData') {
-        // Retrieve last scraped data from storage
-        chrome.storage.local.get(['lastScrapedData'], (result) => {
-            sendResponse({
-                success: true,
-                data: result.lastScrapedData
-            });
-        });
-        return true; // Keep message channel open for async response
-    }
-
-    if (request.action === 'saveScrapedData') {
-        // Save scraped data to storage
-        chrome.storage.local.set({
-            lastScrapedData: request.data
-        }, () => {
-            sendResponse({ success: true });
-        });
-        return true;
-    }
-
-    if (request.action === 'checkApiHealth') {
-        // Check if backend API is reachable
-        fetch('http://localhost:5000/health', {
-            method: 'GET',
-            timeout: 3000
-        })
-        .then(response => {
-            sendResponse({
-                success: response.ok,
-                status: response.status
-            });
-        })
-        .catch(error => {
-            sendResponse({
-                success: false,
-                error: error.message
-            });
-        });
-        return true; // Keep message channel open for async response
-    }
-
-    if (request.action === 'openOptions') {
-        // Open options page if needed in future
-        chrome.runtime.openOptionsPage();
-        sendResponse({ success: true });
-    }
-});
-
-// Handle tab updates - re-scrape when navigating to new product pages
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === 'complete' && tab.url) {
-        const url = tab.url.toLowerCase();
-        if (url.includes('amazon') || url.includes('flipkart')) {
-            // Notify content script to scrape
-            chrome.tabs.sendMessage(tabId, { action: 'scrapeNow' }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.log('[AI Shopping Assistant] Content script not ready');
-                } else if (response && response.success && response.data) {
-                    // Save scraped data
-                    chrome.storage.local.set({
-                        lastScrapedData: response.data
-                    });
-                }
-            });
-        }
-    }
-});
-
-// Context menu for quick actions (optional feature)
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.contextMenus.create({
-        id: 'analyzeProduct',
-        title: 'Ask AI about this product',
-        contexts: ['page'],
-        documentUrlPatterns: [
-            'https://www.amazon.in/*',
-            'https://www.amazon.com/*',
-            'https://www.flipkart.com/*'
-        ]
+  if (request.action === 'getScrapedData') {
+    chrome.storage.local.get(['lastScrapedData'], (result) => {
+      sendResponse({ success: true, data: result.lastScrapedData });
     });
+    return true;
+  }
+
+  if (request.action === 'saveScrapedData') {
+    chrome.storage.local.set({ lastScrapedData: request.data }, () => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (request.action === 'checkApiHealth') {
+    fetch('http://localhost:5000/health', { method: 'GET' })
+      .then(r => sendResponse({ success: r.ok, status: r.status }))
+      .catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
 });
 
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === 'analyzeProduct') {
-        // Open popup programmatically (user still needs to click extension icon)
-        // This is a workaround since we can't directly open popup
-        chrome.tabs.sendMessage(tab.id, { action: 'showNotification' }, () => {
-            if (chrome.runtime.lastError) {
-                console.log('[AI Shopping Assistant] Notification failed');
-            }
-        });
+// Auto-open sidebar when navigating to a product page
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url) {
+    const url = tab.url.toLowerCase();
+    if (url.includes('amazon') || url.includes('flipkart')) {
+      chrome.tabs.sendMessage(tabId, { action: 'scrapeNow' }, (response) => {
+        if (chrome.runtime.lastError) return;
+        if (response?.data) {
+          chrome.storage.local.set({ lastScrapedData: response.data });
+        }
+      });
     }
+  }
 });
 
-console.log('[AI Shopping Assistant] Background service worker started');
+// Context menu → open sidebar
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'analyzeProduct') {
+    chrome.tabs.sendMessage(tab.id, { action: 'openSidebar' });
+  }
+});
+
+console.log('[ShopMind AI] Background worker started');

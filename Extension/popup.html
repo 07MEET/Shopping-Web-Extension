@@ -2,66 +2,81 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Shopping Assistant</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>ShopMind AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=DM+Sans:wght@400;500&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 260px;
+      background: #0d0d14;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 8px 24px rgba(99,102,241,0.5);
+      margin-top: 4px;
+    }
+    .brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .desc {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .status {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+    }
+    .status.ok { color: #34d399; border-color: rgba(52,211,153,0.2); background: rgba(52,211,153,0.05); }
+    .status.err { color: #f87171; border-color: rgba(248,113,113,0.2); background: rgba(248,113,113,0.05); }
+    .open-btn {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+    }
+    .open-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .note { font-size: 10px; color: rgba(255,255,255,0.2); text-align: center; }
+    .divider { width: 100%; height: 1px; background: rgba(255,255,255,0.06); }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-icon">🛒</div>
-      <h1>AI Shopping Assistant</h1>
-      <p class="subtitle">Get instant insights about your product</p>
-    </header>
-
-    <!-- Product Summary Section -->
-    <section id="product-section" class="product-section">
-      <div id="product-info" class="product-info">
-        <div class="loading-spinner"></div>
-        <p class="loading-text">Detecting product...</p>
-      </div>
-    </section>
-
-    <!-- Chat Section -->
-    <section class="chat-section">
-      <div id="chat-messages" class="chat-messages">
-        <div class="message assistant-message">
-          <div class="message-avatar">🤖</div>
-          <div class="message-content">
-            Hi! I'm your AI shopping assistant. I can help you with:
-            <ul>
-              <li>Product details and specifications</li>
-              <li>Price analysis and recommendations</li>
-              <li>Comparing features</li>
-              <li>Answering any questions about this product</li>
-            </ul>
-            What would you like to know?
-          </div>
-        </div>
-      </div>
-
-      <!-- Input Area -->
-      <div class="input-area">
-        <textarea
-          id="user-input"
-          class="user-input"
-          placeholder="Ask me anything about this product..."
-          rows="2"
-        ></textarea>
-        <button id="send-btn" class="send-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2"/>
-          </svg>
-        </button>
-      </div>
-    </section>
-
-    <!-- Status Bar -->
-    <footer class="status-bar">
-      <span id="status-text" class="status-text">Ready</span>
-    </footer>
-  </div>
+  <div class="logo">✦</div>
+  <div class="brand">ShopMind AI</div>
+  <div class="desc">AI-powered shopping advisor.<br>Look for the floating button on product pages.</div>
+  <div class="divider"></div>
+  <div id="site-status" class="status">Checking page…</div>
+  <button class="open-btn" id="open-btn">Open Assistant on Page</button>
+  <div id="api-status" class="status">Checking backend…</div>
+  <div class="note">Navigate to Amazon or Flipkart and click the ✦ button</div>
 
   <script src="popup.js"></script>
 </body>
